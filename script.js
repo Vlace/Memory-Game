@@ -1,7 +1,7 @@
 const gameContainer = document.getElementById('game');
 const parentofGame = document.querySelector('#parent');
 const startButton = document.querySelector('#startGame');
-
+const resetButton = document.querySelector('#resetGame');
 const mySlider = document.querySelector('#myRange');
 
 function randomColor() {
@@ -12,15 +12,19 @@ function randomColor() {
 	COLORS.push(rColor);
 	COLORS.push(rColor);
 }
-
+let pushColorCounter = 0;
 function pushColor() {
-	x = mySlider.value;
-	for (i = 0; i <= x; i++) {
+	let x = mySlider.value;
+
+	for (i = 1; i <= x; i++) {
 		randomColor();
+
+		pushColorCounter++;
 	}
+	console.log(`This is how many times push color has run ${pushColorCounter}`);
 }
-// const COLORS = [ 'red', 'blue', 'green', 'orange', 'purple', 'red', 'blue', 'green', 'orange', 'purple' ];
-const COLORS = [];
+
+let COLORS = [];
 // here is a helper function to shuffle an array
 // it returns the same array with values shuffled
 // it is based on an algorithm called Fisher Yates if you want ot research more
@@ -65,15 +69,34 @@ function createDivsForColors(colorArray) {
 		gameContainer.append(newDiv);
 	}
 }
+resetButton.addEventListener('click', function() {
+	const allDivs = document.querySelectorAll('.back');
+	for (let divs of allDivs) {
+		divs.style.backgroundColor = 'white';
+		divs.classList.remove('picked');
+		divs.classList.remove('matched');
+		matchedPairs = 0;
+	}
+});
+
 startButton.addEventListener('click', function() {
-	
+	const allDivs = document.querySelectorAll('back');
+	for (let divs of allDivs) {
+		allDivs.parentNode.removeChild(divs);
+	}
+	if (COLORS.length > 0) {
+		COLORS = [];
+		shuffledColors = [];
+	}
+
 	pushColor();
-	shuffle(COLORS);
+	shuffledColors = shuffle(COLORS);
 	createDivsForColors(shuffledColors);
 });
 let card1 = '';
 let card2 = '';
 let numPick = 0;
+let matchedPairs = 0;
 // TODO: Implement this function!
 function handleCardClick(event) {
 	// you can use event.target to see which element was clicked
@@ -103,8 +126,13 @@ function handleCardClick(event) {
 		if (numPick === 2 && card1.style.backgroundColor === card2.style.backgroundColor) {
 			card1.classList.add('matched');
 			card2.classList.add('matched');
-
-			console.log(card2);
+			matchedPairs++;
+			console.log(matchedPairs);
+			setTimeout(function() {
+				card1 = '';
+				card2 = '';
+				numPick = 0;
+			}, 1000);
 		}
 	}
 	if (numPick === 0) {
@@ -115,12 +143,20 @@ function handleCardClick(event) {
 		console.log('card1');
 		console.log(numPick);
 	}
-	if (card1.classList.contains('matched')) {
-		card1 = '';
-		card2 = '';
-		numPick = 0;
+	let allDivs = document.getElementsByClassName('back');
+	if (matchedPairs === pushColorCounter) {
+		setTimeout(function() {
+			while (allDivs.length > 0) {
+				allDivs[0].parentNode.removeChild(allDivs[0]);
+			}
+			COLORS = [];
+			pushColorCounter = 0;
+			matchedPairs = 0;
+			numPick = 0;
+			card1 = '';
+			card2 = '';
+		}, 1000);
 	}
 }
-
 // when the DOM loads
 createDivsForColors(shuffledColors);
